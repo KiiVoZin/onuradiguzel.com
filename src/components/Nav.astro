@@ -1,0 +1,80 @@
+---
+---
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">YOUR_NAME<span class="cursor">█</span></span>
+    <ul class="nav-links">
+      <li><a href="#about">./about</a></li>
+      <li><a href="#projects">./projects</a></li>
+      <li><a href="#contact">./contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<style>
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(8, 12, 8, 0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(4px);
+  }
+
+  .nav-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    color: var(--green);
+    letter-spacing: 0.05em;
+  }
+
+  .cursor {
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+  }
+
+  .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover {
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  @media (max-width: 480px) {
+    .nav-links {
+      gap: 1rem;
+    }
+
+    .nav-links a {
+      font-size: 0.75rem;
+    }
+  }
+</style>

@@ -1,0 +1,162 @@
+---
+const projects = [
+  {
+    id: "01",
+    name: "PROJECT ALPHA",
+    engine: "Unity",
+    lang: "C#",
+    description: "A short description of this game. What is it about? What makes it interesting? One or two sentences.",
+    tags: ["2D", "Platformer", "Jam"],
+    link: "#",
+    status: "SHIPPED",
+  },
+  {
+    id: "02",
+    name: "PROJECT BETA",
+    engine: "Godot",
+    lang: "GDScript",
+    description: "Another game you've made. Replace this with a real description of the gameplay or the idea behind it.",
+    tags: ["3D", "Puzzle", "Solo"],
+    link: "#",
+    status: "SHIPPED",
+  },
+  {
+    id: "03",
+    name: "PROJECT GAMMA",
+    engine: "Unreal",
+    lang: "C++",
+    description: "A third project. Could be a work in progress, a game jam entry, or a demo you're proud of.",
+    tags: ["FPS", "WIP"],
+    link: "#",
+    status: "IN PROGRESS",
+  },
+];
+---
+
+<section id="projects">
+  <h2 class="section-title">projects</h2>
+  <div class="projects-grid">
+    {projects.map((p) => (
+      <a href={p.link} class="card" target="_blank" rel="noopener noreferrer">
+        <div class="card-header">
+          <span class="card-id">[{p.id}]</span>
+          <span class={`card-status ${p.status === 'SHIPPED' ? 'shipped' : 'wip'}`}>{p.status}</span>
+        </div>
+        <h3 class="card-name">{p.name}</h3>
+        <p class="card-meta">{p.engine} / {p.lang}</p>
+        <p class="card-desc">{p.description}</p>
+        <div class="card-tags">
+          {p.tags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+        <span class="card-link">./play ›</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .card:hover {
+    border-color: var(--green-dim);
+    box-shadow: 0 0 12px rgba(0, 255, 65, 0.08);
+    text-decoration: none;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-id {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .card-status {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 2px;
+  }
+
+  .card-status.shipped {
+    background: var(--green-dark);
+    color: var(--green);
+    border: 1px solid var(--green-dim);
+  }
+
+  .card-status.wip {
+    background: #1a1400;
+    color: #ffcc00;
+    border: 1px solid #665200;
+  }
+
+  .card-name {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    color: var(--green);
+    line-height: 1.8;
+  }
+
+  .card-meta {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .card-desc {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+  }
+
+  .card-link {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--green-dim);
+    margin-top: 0.4rem;
+    transition: color 0.2s;
+  }
+
+  .card:hover .card-link {
+    color: var(--green);
+  }
+</style>
