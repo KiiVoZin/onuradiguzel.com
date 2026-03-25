@@ -2,7 +2,7 @@
 interface Props {
   title?: string;
 }
-const { title = "Your Name — Game Developer" } = Astro.props;
+const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
 ---
 
 <!doctype html>
@@ -12,6 +12,7 @@ const { title = "Your Name — Game Developer" } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="description" content="Onur Adıgüzel (KiiVoZin) — Game Programmer based in Warsaw. Specializing in gameplay systems, shaders, and optimization across Unreal Engine 5, Unity, and Godot." />
     <title>{title}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,17 +25,17 @@ const { title = "Your Name — Game Developer" } = Astro.props;
 
 <style is:global>
   :root {
-    --green: #00ff41;
-    --green-dim: #00aa29;
-    --green-dark: #004d12;
-    --green-faint: #0d1f0f;
-    --bg: #080c08;
-    --bg-card: #0d1a0e;
-    --text: #c8ffc8;
-    --text-dim: #6abf6a;
-    --border: #1a3a1a;
-    --font-pixel: 'Press Start 2P', monospace;
-    --font-mono: 'Share Tech Mono', monospace;
+    --green:       #3fb950;
+    --green-dim:   #238636;
+    --green-dark:  #0f2d0f;
+    --green-faint: #091409;
+    --bg:          #020302;
+    --bg-card:     #070c07;
+    --text:        #c9d1d9;
+    --text-dim:    #8b949e;
+    --border:      #1e2e1e;
+    --font-pixel:  'Press Start 2P', monospace;
+    --font-mono:   'Share Tech Mono', monospace;
   }
 
   *, *::before, *::after {
@@ -43,9 +44,7 @@ const { title = "Your Name — Game Developer" } = Astro.props;
     padding: 0;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
+  html { scroll-behavior: smooth; }
 
   body {
     background-color: var(--bg);
@@ -54,22 +53,6 @@ const { title = "Your Name — Game Developer" } = Astro.props;
     font-size: 1rem;
     line-height: 1.7;
     min-height: 100vh;
-  }
-
-  /* Subtle scanline overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 2px,
-      rgba(0, 0, 0, 0.08) 2px,
-      rgba(0, 0, 0, 0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 9999;
   }
 
   h1, h2, h3 {
@@ -83,9 +66,7 @@ const { title = "Your Name — Game Developer" } = Astro.props;
     text-decoration: none;
   }
 
-  a:hover {
-    text-decoration: underline;
-  }
+  a:hover { text-decoration: underline; }
 
   section {
     padding: 5rem 1.5rem;
@@ -112,6 +93,6 @@ const { title = "Your Name — Game Developer" } = Astro.props;
 
   @keyframes blink {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+    50%       { opacity: 0; }
   }
 </style>

@@ -1,0 +1,376 @@
+---
+import { projects } from '../data/projects.js';
+
+const statusLabel = {
+  'Shipped':      { text: 'Shipped',      color: '#1a7f37' },
+  'WIP':          { text: 'In Progress',  color: '#9a6700' },
+  'Internal':     { text: 'Internal',     color: '#0550ae' },
+  'Professional': { text: 'Professional', color: '#953800' },
+};
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onur Adıgüzel — CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="page">
+
+    <a href="/" class="back no-print">← back to full site</a>
+
+    <header>
+      <div class="header-main">
+        <img src="/avatar.jpg" alt="Onur Adıgüzel" class="avatar" />
+        <div>
+          <h1>Onur Adıgüzel</h1>
+          <p class="title">Game Programmer</p>
+        </div>
+      </div>
+      <div class="header-contact">
+        <a href="mailto:onur.adiguzel@hotmail.com">onur.adiguzel@hotmail.com</a>
+        <a href="https://www.linkedin.com/in/onur-a-61383a20a/" target="_blank">LinkedIn</a>
+        <span>Warsaw, Poland</span>
+      </div>
+    </header>
+
+    <hr />
+
+    <section>
+      <h2>About</h2>
+      <p>
+        Game programmer with a generalist background across gameplay, tools, shaders, and optimization.
+        Comfortable working in Unreal Engine 5, Unity, and Godot. Degree in Computer Science from
+        TOBB University of Economics and Technology; currently studying Video Game Programming at
+        Futuregames Warsaw. Has delivered real-time software for a commercial client at scale.
+      </p>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Skills</h2>
+      <div class="skills-grid">
+        <div>
+          <h3>Languages</h3>
+          <p>C#, C++, GDScript</p>
+        </div>
+        <div>
+          <h3>Engines</h3>
+          <p>Unreal Engine 5, Unity, Godot</p>
+        </div>
+        <div>
+          <h3>Tools</h3>
+          <p>Perforce, Git, HLSL</p>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Education</h2>
+
+      <div class="entry">
+        <div class="entry-meta">
+          <span class="entry-date">2024 — present</span>
+        </div>
+        <div class="entry-body">
+          <h3>Video Game Programming <span class="badge">Current</span></h3>
+          <p class="entry-place">Futuregames Warsaw — Warsaw, Poland</p>
+          <p>Specialized program covering gameplay systems, graphics programming, and professional game development pipelines.</p>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-meta">
+          <span class="entry-date">2019 — 2023</span>
+        </div>
+        <div class="entry-body">
+          <h3>Bachelor's in Computer Science</h3>
+          <p class="entry-place">TOBB University of Economics and Technology — Ankara, Turkey</p>
+          <p>Algorithms, data structures, software engineering, and systems programming.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Projects</h2>
+      {projects.map(p => {
+        const st = statusLabel[p.status] ?? statusLabel['Shipped'];
+        return (
+          <div class="entry">
+            <div class="entry-meta">
+              <span class="entry-date">{p.year}</span>
+              <span class="proj-status" style={`color:${st.color}`}>{st.text}</span>
+            </div>
+            <div class="entry-body">
+              <h3>
+                {p.name}
+                <span class="proj-engine">{p.engine}</span>
+              </h3>
+              <p class="entry-place">{p.category}</p>
+              <p>{p.short}</p>
+              {p.links.length > 0 && (
+                <div class="proj-links">
+                  {p.links.map(l => (
+                    <a href={l.href} target="_blank" rel="noopener noreferrer">{l.label} →</a>
+                  ))}
+                </div>
+              )}
+              {p.note && <p class="proj-note">{p.note}</p>}
+              {p.collaborators.length > 0 && (
+                <p class="proj-collab">
+                  With{' '}
+                  {p.collaborators.map((c, i) => (
+                    <>
+                      <a href={c.href} target="_blank" rel="noopener noreferrer">{c.name}</a>
+                      {i < p.collaborators.length - 1 ? ' & ' : ''}
+                    </>
+                  ))}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </section>
+
+  </div>
+</body>
+</html>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #f6f8fa;
+  }
+
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+    background: #fff;
+    min-height: 100vh;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+  }
+
+  .back {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    color: #666;
+    text-decoration: none;
+  }
+  .back:hover { color: #1a1a1a; }
+
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 45%;
+    flex-shrink: 0;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #111;
+  }
+
+  .title {
+    font-size: 1rem;
+    color: #555;
+    margin-top: 0.15rem;
+  }
+
+  .header-contact {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+    font-size: 0.88rem;
+    color: #555;
+    text-align: right;
+  }
+
+  .header-contact a { color: #555; text-decoration: none; }
+  .header-contact a:hover { color: #111; text-decoration: underline; }
+
+  hr {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 1.5rem 0;
+  }
+
+  section { margin-bottom: 0.5rem; }
+
+  h2 {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #999;
+    margin-bottom: 1rem;
+  }
+
+  p { color: #333; }
+
+  /* Skills */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .skills-grid h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 0.2rem;
+  }
+
+  .skills-grid p { font-size: 0.9rem; color: #444; }
+
+  /* Entries */
+  .entry {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .entry-meta {
+    padding-top: 0.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .entry-date {
+    font-size: 0.8rem;
+    color: #999;
+    white-space: nowrap;
+  }
+
+  .proj-status {
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+
+  .entry-body h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .proj-engine {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: #888;
+    background: #f3f4f6;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #edf7ed;
+    color: #1a7f37;
+    border: 1px solid #b5ddb5;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  .entry-place {
+    font-size: 0.82rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+    margin-top: 0.1rem;
+  }
+
+  .entry-body p { font-size: 0.9rem; }
+
+  .proj-links {
+    margin-top: 0.35rem;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .proj-links a {
+    font-size: 0.85rem;
+    color: #0550ae;
+    text-decoration: none;
+  }
+  .proj-links a:hover { text-decoration: underline; }
+
+  .proj-note {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    color: #999 !important;
+    font-style: italic;
+  }
+
+  .proj-collab {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #555 !important;
+  }
+
+  .proj-collab a { color: #0550ae; text-decoration: none; }
+  .proj-collab a:hover { text-decoration: underline; }
+
+  /* Print */
+  @media print {
+    body { background: white; font-size: 13px; }
+    .page { padding: 0; border: none; }
+    .no-print { display: none; }
+    a { color: inherit !important; text-decoration: none; }
+    .proj-links a, .proj-collab a { color: #333 !important; }
+  }
+
+  @media (max-width: 600px) {
+    header { flex-direction: column; align-items: flex-start; }
+    .header-contact { align-items: flex-start; text-align: left; }
+    .skills-grid { grid-template-columns: 1fr 1fr; }
+    .entry { grid-template-columns: 1fr; }
+    .entry-meta { flex-direction: row; gap: 0.75rem; margin-bottom: 0.25rem; }
+  }
+</style>

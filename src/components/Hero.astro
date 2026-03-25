@@ -8,17 +8,115 @@
     <span class="dot green-dot"></span>
     <span class="terminal-title">portfolio.exe</span>
   </div>
-  <div class="terminal-body">
-    <p class="line"><span class="prompt">$</span> whoami</p>
-    <p class="line output name">YOUR NAME</p>
-    <p class="line"><span class="prompt">$</span> cat role.txt</p>
-    <p class="line output">Video Game Developer</p>
-    <p class="line"><span class="prompt">$</span> cat tagline.txt</p>
-    <p class="line output dim">Building worlds one frame at a time.</p>
-    <p class="line"><span class="prompt">$</span> <span class="typing-cursor">█</span></p>
-  </div>
-  <div class="scroll-hint">scroll down ↓</div>
+  <div class="terminal-body" id="terminal-body"></div>
+  <div class="scroll-hint" id="scroll-hint">scroll down ↓</div>
 </section>
+
+<script>
+  const body = document.getElementById('terminal-body');
+  const hint = document.getElementById('scroll-hint');
+
+  const script = [
+    { kind: 'command', text: 'whoami' },
+    { kind: 'output',  text: 'Onur Adıgüzel',  classes: ['name'] },
+    { kind: 'output',  text: '// aka KiiVoZin', classes: ['alias'] },
+    { kind: 'command', text: 'title' },
+    { kind: 'output',  text: 'Game Programmer' },
+    { kind: 'command', text: 'tagline' },
+    { kind: 'output',  text: 'I write the code that makes worlds feel alive.', classes: ['dim'] },
+  ];
+
+  const CMD_DELAY = 70;
+  const OUT_DELAY = 18;
+  const PRE_CMD   = 500;
+  const POST_CMD  = 150;
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function flash() {
+    body.style.borderColor = 'var(--green-dim)';
+    body.style.boxShadow   = '0 0 12px rgba(63,185,80,0.15)';
+    setTimeout(() => {
+      body.style.borderColor = '';
+      body.style.boxShadow   = '';
+    }, 90);
+  }
+
+  async function typeInto(el, text, delay) {
+    for (const char of text) {
+      el.textContent += char;
+      flash();
+      const jitter = delay === CMD_DELAY ? (Math.random() * 40 - 20) : 0;
+      await sleep(delay + jitter);
+    }
+  }
+
+  function addPromptLine() {
+    const p = document.createElement('p');
+    p.className = 'line';
+    const s = document.createElement('span');
+    s.className = 'prompt';
+    s.textContent = '$ ';
+    p.appendChild(s);
+    body.appendChild(p);
+    return p;
+  }
+
+  function showInstant() {
+    for (const entry of script) {
+      if (entry.kind === 'command') {
+        const p = addPromptLine();
+        const span = document.createElement('span');
+        span.textContent = entry.text;
+        p.appendChild(span);
+      } else {
+        const p = document.createElement('p');
+        p.className = ['line', 'output', ...(entry.classes ?? [])].join(' ');
+        p.textContent = entry.text;
+        body.appendChild(p);
+      }
+    }
+    const p = addPromptLine();
+    const cursor = document.createElement('span');
+    cursor.className = 'typing-cursor';
+    cursor.textContent = '█';
+    p.appendChild(cursor);
+    hint.classList.add('visible');
+  }
+
+  async function runAnimated() {
+    for (const entry of script) {
+      if (entry.kind === 'command') {
+        await sleep(PRE_CMD);
+        const p = addPromptLine();
+        const span = document.createElement('span');
+        p.appendChild(span);
+        await typeInto(span, entry.text, CMD_DELAY);
+        await sleep(POST_CMD);
+      } else {
+        const p = document.createElement('p');
+        p.className = ['line', 'output', ...(entry.classes ?? [])].join(' ');
+        body.appendChild(p);
+        await typeInto(p, entry.text, OUT_DELAY);
+        await sleep(80);
+      }
+      body.scrollTop = body.scrollHeight;
+    }
+    const p = addPromptLine();
+    const cursor = document.createElement('span');
+    cursor.className = 'typing-cursor';
+    cursor.textContent = '█';
+    p.appendChild(cursor);
+    hint.classList.add('visible');
+    localStorage.setItem('visited', '1');
+  }
+
+  if (localStorage.getItem('visited')) {
+    showInstant();
+  } else {
+    runAnimated();
+  }
+</script>
 
 <style>
   .hero {
@@ -42,16 +140,10 @@
     gap: 0.4rem;
   }
 
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  .dot.red    { background: #ff5f57; }
-  .dot.yellow { background: #ffbd2e; }
-  .dot.green-dot  { background: #28c840; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.red       { background: #ff5f57; }
+  .dot.yellow    { background: #ffbd2e; }
+  .dot.green-dot { background: #28c840; }
 
   .terminal-title {
     margin-left: 0.5rem;
@@ -68,44 +160,29 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    min-height: 220px;
+    transition: border-color 0.1s ease, box-shadow 0.1s ease;
   }
 
   .line {
     font-family: var(--font-mono);
     font-size: 1.05rem;
     color: var(--text);
+    min-height: 1.5em;
   }
 
-  .prompt {
-    color: var(--green);
-    margin-right: 0.6rem;
-    font-weight: bold;
-  }
+  .prompt { color: var(--green); font-weight: bold; }
 
-  .output {
-    padding-left: 1.4rem;
-    color: var(--text);
-  }
+  .output        { padding-left: 1.4rem; color: var(--text); }
+  .output.name   { font-family: var(--font-pixel); font-size: 1rem; color: var(--green); line-height: 1.8; }
+  .output.alias  { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+  .output.dim    { color: var(--text-dim); }
 
-  .output.name {
-    font-family: var(--font-pixel);
-    font-size: 1.1rem;
-    color: var(--green);
-    margin-bottom: 0.5rem;
-  }
-
-  .output.dim {
-    color: var(--text-dim);
-  }
-
-  .typing-cursor {
-    animation: blink 1s step-end infinite;
-    color: var(--green);
-  }
+  .typing-cursor { color: var(--green); animation: blink 1s step-end infinite; }
 
   @keyframes blink {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+    50%       { opacity: 0; }
   }
 
   .scroll-hint {
@@ -114,20 +191,22 @@
     font-size: 0.8rem;
     color: var(--text-dim);
     text-align: center;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .scroll-hint.visible {
+    opacity: 1;
     animation: fade 2s ease-in-out infinite;
   }
 
   @keyframes fade {
     0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
+    50%       { opacity: 1; }
   }
 
   @media (max-width: 480px) {
-    .output.name {
-      font-size: 0.75rem;
-    }
-    .line {
-      font-size: 0.9rem;
-    }
+    .output.name { font-size: 0.65rem; }
+    .line        { font-size: 0.9rem; }
   }
 </style>

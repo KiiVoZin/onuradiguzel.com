@@ -1,28 +1,41 @@
 ---
 const links = [
-  { label: "github", handle: "@yourusername", href: "https://github.com/yourusername" },
-  { label: "itch.io", handle: "yourusername.itch.io", href: "https://yourusername.itch.io" },
-  { label: "email", handle: "you@email.com", href: "mailto:you@email.com" },
-  { label: "twitter", handle: "@yourusername", href: "https://twitter.com/yourusername" },
+  {
+    label: "email",
+    handle: "onur.adiguzel@hotmail.com",
+    href: "mailto:onur.adiguzel@hotmail.com",
+  },
+  {
+    label: "linkedin",
+    handle: "Onur Adıgüzel",
+    href: "https://www.linkedin.com/in/onur-a-61383a20a/",
+  },
+  {
+    label: "github",
+    handle: "KiiVoZin",
+    href: "https://github.com/KiiVoZin",
+  },
+  {
+    label: "steam",
+    handle: "KiiVoZin",
+    href: "https://steamcommunity.com/id/KiiVoZin/",
+  },
 ];
 ---
 
 <section id="contact">
   <h2 class="section-title">contact</h2>
-  <p class="intro">Want to collaborate, hire me, or just say hi? Reach out through any of these.</p>
+  <p class="intro">Want to work together, have a project in mind, or just want to talk games?<br />I'm always open to a conversation.</p>
   <div class="links">
     {links.map((l) => (
-      <a href={l.href} class="link-row" target="_blank" rel="noopener noreferrer">
+      <a href={l.href} class="link-row" target={l.href.startsWith('mailto') ? '_self' : '_blank'} rel="noopener noreferrer">
         <span class="link-label">{l.label}</span>
-        <span class="link-separator"> ──────── </span>
+        <span class="link-sep"> ──── </span>
         <span class="link-handle">{l.handle}</span>
         <span class="link-arrow"> ›</span>
       </a>
     ))}
   </div>
-  <p class="footer">
-    Built with <a href="https://astro.build" target="_blank">Astro</a>. Deployed on GitHub Pages.
-  </p>
 </section>
 
 <style>
@@ -31,6 +44,7 @@ const links = [
     font-size: 0.95rem;
     color: var(--text-dim);
     margin-bottom: 2rem;
+    line-height: 1.8;
   }
 
   .links {
@@ -43,12 +57,11 @@ const links = [
   .link-row {
     display: flex;
     align-items: baseline;
-    gap: 0;
     font-family: var(--font-mono);
     font-size: 1rem;
     color: var(--text);
     text-decoration: none;
-    padding: 0.6rem 1rem;
+    padding: 0.7rem 1rem;
     border: 1px solid var(--border);
     border-radius: 3px;
     background: var(--bg-card);
@@ -67,16 +80,14 @@ const links = [
     min-width: 80px;
   }
 
-  .link-separator {
+  .link-sep {
     color: var(--border);
-    flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    letter-spacing: 0.05em;
+    margin: 0 0.3rem;
   }
 
   .link-handle {
     color: var(--text-dim);
+    flex: 1;
   }
 
   .link-arrow {

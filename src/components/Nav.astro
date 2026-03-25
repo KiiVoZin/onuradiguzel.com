@@ -3,11 +3,13 @@
 
 <nav>
   <div class="nav-inner">
-    <span class="nav-logo">YOUR_NAME<span class="cursor">█</span></span>
+    <span class="nav-logo"><span id="nav-text"></span><span class="cursor">█</span></span>
     <ul class="nav-links">
-      <li><a href="#about">./about</a></li>
       <li><a href="#projects">./projects</a></li>
+      <li><a href="#about">./about</a></li>
+      <li><a href="#education">./education</a></li>
       <li><a href="#contact">./contact</a></li>
+      <li><a href="/cv" class="cv-link">cv →</a></li>
     </ul>
   </div>
 </nav>
@@ -19,7 +21,7 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(8, 12, 8, 0.92);
+    background: rgba(2, 3, 2, 0.97);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(4px);
   }
@@ -68,13 +70,68 @@
     text-decoration: none;
   }
 
-  @media (max-width: 480px) {
+  .cv-link {
+    color: var(--text-dim) !important;
+    border: 1px solid var(--border);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8rem !important;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .cv-link:hover {
+    border-color: var(--green-dim) !important;
+    color: var(--green) !important;
+  }
+
+  @media (max-width: 600px) {
+    #nav-text { display: none; }
+  }
+
+  @media (max-width: 600px) {
     .nav-links {
       gap: 1rem;
     }
-
     .nav-links a {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
     }
   }
 </style>
+
+<script>
+  const el = document.getElementById('nav-text');
+  const names = ['Onur Adıgüzel', 'KiiVoZin'];
+
+  const TYPE_SPEED   = 90;
+  const DELETE_SPEED = 50;
+  const PAUSE_AFTER  = 2000;
+  const PAUSE_BEFORE = 400;
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function run() {
+    let i = 0;
+    while (true) {
+      const word = names[i % names.length];
+
+      // Type
+      for (const char of word) {
+        el.textContent += char;
+        await sleep(TYPE_SPEED + Math.random() * 30 - 15);
+      }
+
+      await sleep(PAUSE_AFTER);
+
+      // Delete
+      while (el.textContent.length > 0) {
+        el.textContent = el.textContent.slice(0, -1);
+        await sleep(DELETE_SPEED);
+      }
+
+      await sleep(PAUSE_BEFORE);
+      i++;
+    }
+  }
+
+  run();
+</script>

@@ -1,0 +1,284 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import { projects } from '../../data/projects.js';
+
+export function getStaticPaths() {
+  return projects.map(p => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+
+const { project: p } = Astro.props;
+
+const statusColor = {
+  'Shipped':      { text: 'var(--green)',  border: 'var(--green-dim)', bg: 'var(--green-dark)' },
+  'WIP':          { text: '#e3b341',       border: '#674e10',          bg: '#2d2100' },
+  'Internal':     { text: '#79c0ff',       border: '#1f4473',          bg: '#0d1f33' },
+  'Professional': { text: '#ffa657',       border: '#6e4312',          bg: '#2d1c00' },
+};
+const s = statusColor[p.status] ?? statusColor['Shipped'];
+---
+
+<Layout title={`${p.name} — Onur Adıgüzel`}>
+  <Nav />
+  <main class="project-page">
+
+    <a href="/#projects" class="back">← back to projects</a>
+
+    <div class="terminal-bar">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green-dot"></span>
+      <span class="terminal-title">./projects/{p.slug}</span>
+    </div>
+
+    <div class="terminal-body">
+
+      <div class="header">
+        <div class="header-left">
+          <h1 class="project-name">{p.name}</h1>
+          <p class="project-meta">{p.engine} · {p.language} · {p.year}</p>
+        </div>
+        <span class="status-badge" style={`background:${s.bg};color:${s.text};border-color:${s.border}`}>
+          {p.status}
+        </span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="block">
+        <p class="block-label">// overview</p>
+        <p class="block-text">{p.short}</p>
+      </div>
+
+      <div class="block">
+        <p class="block-label">// what I built</p>
+        <ul class="what-list">
+          {p.what.map(item => (
+            <li><span class="bullet">›</span><span>{item}</span></li>
+          ))}
+        </ul>
+      </div>
+
+      {p.links.length > 0 && (
+        <div class="block">
+          <p class="block-label">// links</p>
+          <div class="links">
+            {p.links.map(l => (
+              <a href={l.href} target="_blank" rel="noopener noreferrer" class="ext-link">
+                {l.label} ›
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {p.collaborators.length > 0 && (
+        <div class="block">
+          <p class="block-label">// in collaboration with</p>
+          <div class="collab-list">
+            {p.collaborators.map(c => (
+              <a href={c.href} target="_blank" rel="noopener noreferrer" class="collab-link">
+                {c.name}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {p.note && (
+        <div class="block">
+          <p class="note">{p.note}</p>
+        </div>
+      )}
+
+      <p class="cursor-line"><span class="prompt">$</span> <span class="cursor">█</span></p>
+    </div>
+
+  </main>
+</Layout>
+
+<style>
+  .project-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 7rem 1.5rem 4rem;
+  }
+
+  .back {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+  }
+  .back:hover { color: var(--green); text-decoration: none; }
+
+  .terminal-bar {
+    background: var(--green-dark);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.red       { background: #ff5f57; }
+  .dot.yellow    { background: #ffbd2e; }
+  .dot.green-dot { background: #28c840; }
+
+  .terminal-title {
+    margin-left: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .terminal-body {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0 0 6px 6px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .project-name {
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    color: var(--green);
+    line-height: 1.8;
+    margin-bottom: 0.3rem;
+  }
+
+  .project-meta {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .status-badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .divider {
+    border-top: 1px solid var(--border);
+    margin: -0.5rem 0;
+  }
+
+  .block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .block-label {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--green-dim);
+  }
+
+  .block-text {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    padding-left: 1rem;
+  }
+
+  .what-list {
+    list-style: none;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .what-list li {
+    font-family: var(--font-mono);
+    font-size: 0.93rem;
+    color: var(--text);
+    line-height: 1.7;
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .bullet { color: var(--green-dim); flex-shrink: 0; margin-top: 0.05rem; }
+
+  .links {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-left: 1rem;
+  }
+
+  .ext-link {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--green);
+    border: 1px solid var(--green-dim);
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+  .ext-link:hover { background: var(--green-dark); text-decoration: none; }
+
+  .collab-list {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    padding-left: 1rem;
+  }
+
+  .collab-link {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .collab-link:hover { color: var(--green); border-color: var(--green-dim); text-decoration: none; }
+
+  .note {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    padding-left: 1rem;
+  }
+
+  .cursor-line {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+  }
+
+  .prompt { color: var(--green); margin-right: 0.4rem; }
+
+  .cursor { color: var(--green); animation: blink 1s step-end infinite; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  @media (max-width: 500px) {
+    .project-name { font-size: 0.55rem; }
+    .header { flex-direction: column; }
+  }
+</style>
