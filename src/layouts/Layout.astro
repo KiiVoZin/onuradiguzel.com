@@ -14,6 +14,31 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content="Onur Adıgüzel (KiiVoZin) — Game Programmer based in Warsaw. Specializing in gameplay systems, shaders, and optimization across Unreal Engine 5, Unity, and Godot." />
     <title>{title}</title>
+    <link rel="canonical" href="https://onuradiguzel.com/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://onuradiguzel.com/" />
+    <meta property="og:title"       content={title} />
+    <meta property="og:description" content="Onur Adıgüzel (KiiVoZin) — Game Programmer based in Warsaw. Specializing in gameplay systems, shaders, and optimization across Unreal Engine 5, Unity, and Godot." />
+
+    <!-- Person schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Onur Adıgüzel",
+      "alternateName": "KiiVoZin",
+      "jobTitle": "Game Programmer",
+      "url": "https://onuradiguzel.com/",
+      "sameAs": [
+        "https://github.com/KiiVoZin",
+        "https://www.linkedin.com/in/onur-a-61383a20a/",
+        "https://steamcommunity.com/id/KiiVoZin/"
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
