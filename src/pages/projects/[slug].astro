@@ -95,13 +95,60 @@ const s = statusColor[p.status] ?? statusColor['Shipped'];
     </div>
 
   </main>
+  <script is:inline>
+  var _NAV_LABELS = {
+    '#hero': 'main', '#projects': 'projects',
+    '#about': 'about', '#education': 'education', '#contact': 'contact'
+  };
+
+  function _animateAndGo(label, sectionId) {
+    var cmdBar  = document.getElementById('cmd-bar');
+    var cmdText = document.getElementById('cmd-text');
+    if (!cmdBar || !cmdText) return;
+    var cmd = './' + label;
+    cmdBar.classList.add('visible');
+    cmdText.textContent = '';
+    var i = 0;
+    var iv = setInterval(function () {
+      cmdText.textContent = cmd.slice(0, ++i);
+      if (i >= cmd.length) {
+        clearInterval(iv);
+        var flash = document.createElement('div');
+        flash.className = 'transition-flash';
+        document.body.appendChild(flash);
+        sessionStorage.setItem('goTo', sectionId);
+        setTimeout(function () { window.location.href = '/'; }, 80);
+      }
+    }, 40);
+  }
+
+  // Capture phase — fires before browser default, before any other listener
+  document.addEventListener('click', function (e) {
+    var el = e.target;
+    var a = el.closest('a');
+    if (!a) return;
+
+    if (a.classList.contains('back')) {
+      e.preventDefault();
+      _animateAndGo('projects', 'projects');
+      return;
+    }
+
+    var hash = a.getAttribute('href') || '';
+    if (hash.charAt(0) === '#' && a.closest('nav')) {
+      e.preventDefault();
+      var label = _NAV_LABELS[hash] || hash.slice(1);
+      _animateAndGo(label, hash.slice(1));
+    }
+  }, true);
+  </script>
 </Layout>
 
 <style>
   .project-page {
     max-width: 860px;
     margin: 0 auto;
-    padding: 7rem 1.5rem 4rem;
+    padding: 6rem 1.5rem 4rem;
   }
 
   .back {
@@ -282,3 +329,4 @@ const s = statusColor[p.status] ?? statusColor['Shipped'];
     .header { flex-direction: column; }
   }
 </style>
+

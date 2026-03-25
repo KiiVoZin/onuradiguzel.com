@@ -5,6 +5,7 @@
   <div class="nav-inner">
     <span class="nav-logo"><span id="nav-text"></span><span class="cursor">█</span></span>
     <ul class="nav-links">
+      <li><a href="#hero">./main</a></li>
       <li><a href="#projects">./projects</a></li>
       <li><a href="#about">./about</a></li>
       <li><a href="#education">./education</a></li>
@@ -27,7 +28,7 @@
   }
 
   .nav-inner {
-    max-width: 900px;
+    max-width: min(1100px, 90vw);
     margin: 0 auto;
     padding: 1rem 1.5rem;
     display: flex;
@@ -37,7 +38,7 @@
 
   .nav-logo {
     font-family: var(--font-pixel);
-    font-size: 0.6rem;
+    font-size: 0.75rem;
     color: var(--green);
     letter-spacing: 0.05em;
   }
@@ -68,6 +69,13 @@
   .nav-links a:hover {
     color: var(--green);
     text-decoration: none;
+  }
+
+  .nav-links a.active {
+    font-family: var(--font-pixel);
+    font-size: 0.65rem;
+    color: var(--green);
+    text-shadow: 0 0 10px rgba(63, 185, 80, 0.6);
   }
 
   .cv-link {

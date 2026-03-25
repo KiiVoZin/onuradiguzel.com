@@ -19,7 +19,11 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <canvas id="particle-canvas"></canvas>
     <slot />
+    <div id="cmd-bar" class="cmd-bar">
+      <span class="cmd-prompt">$ </span><span id="cmd-text"></span><span class="cmd-cursor">█</span>
+    </div>
   </body>
 </html>
 
@@ -44,7 +48,10 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
     padding: 0;
   }
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    font-size: clamp(15px, 1.25vw, 20px);
+  }
 
   body {
     background-color: var(--bg);
@@ -53,6 +60,39 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
     font-size: 1rem;
     line-height: 1.7;
     min-height: 100vh;
+  }
+
+  /* ── Particle canvas ── */
+  #particle-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -2;
+  }
+
+  /* CRT scanlines — behind all content, only visible on bare background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(63, 185, 80, 0.10) 50%,
+      transparent 50%
+    );
+    background-size: 100% 4px;
+    mask-image: radial-gradient(
+      circle 180px at var(--cx, -999px) var(--cy, -999px),
+      black 0%,
+      transparent 100%
+    );
+    -webkit-mask-image: radial-gradient(
+      circle 180px at var(--cx, -999px) var(--cy, -999px),
+      black 0%,
+      transparent 100%
+    );
   }
 
   h1, h2, h3 {
@@ -69,16 +109,75 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
   a:hover { text-decoration: underline; }
 
   section {
-    padding: 5rem 1.5rem;
-    max-width: 900px;
+    max-width: min(1100px, 90vw);
     margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  section:not(.hero) {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2rem;
+    padding: 80px 1.5rem 3.5rem;
+  }
+
+  @media (max-width: 768px) {
+    section:not(.hero) {
+      height: auto;
+      min-height: 100vh;
+      overflow: visible;
+    }
+  }
+
+  /* ── Command bar ── */
+  .cmd-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.7rem 1.5rem;
+    background: rgba(2, 3, 2, 0.97);
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--text);
+    z-index: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .cmd-bar.visible { opacity: 1; }
+
+  .transition-flash {
+    position: fixed;
+    inset: 0;
+    background: rgba(63, 185, 80, 0.06);
+    pointer-events: none;
+    z-index: 9000;
+    animation: flash-in-out 0.16s ease-in-out forwards;
+  }
+
+  @keyframes flash-in-out {
+    0%   { opacity: 0; }
+    50%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .cmd-prompt { color: var(--green); }
+  .cmd-cursor {
+    color: var(--green);
+    animation: blink 1s step-end infinite;
+    margin-left: 1px;
   }
 
   .section-title {
     font-family: var(--font-pixel);
     font-size: 0.75rem;
     color: var(--green);
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
   }
 
   .section-title::before {
@@ -95,4 +194,226 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
     0%, 100% { opacity: 1; }
     50%       { opacity: 0; }
   }
+
+  /* ── Pixel sparks ── */
+  .pixel-spark {
+    position: fixed;
+    width: var(--size, 3px);
+    height: var(--size, 3px);
+    background: var(--green);
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+    animation: spark-fly 0.5s ease-out forwards;
+  }
+
+  @keyframes spark-fly {
+    0%   { transform: translate(-50%, -50%); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))); opacity: 0; }
+  }
+
+  /* ── Chromatic aberration ── */
+  h2, h3, .card-name {
+    transition: text-shadow 0.3s ease-out;
+  }
+
+  h2.chroma-active, h3.chroma-active, .card-name.chroma-active {
+    text-shadow: -4px 0 rgba(255, 30, 60, 0.7), 4px 0 rgba(0, 160, 255, 0.7);
+    transition: none;
+  }
 </style>
+
+<script>
+  // ── Incoming navigation from project pages ──
+  const goTo = sessionStorage.getItem('goTo');
+  if (goTo) {
+    sessionStorage.removeItem('goTo');
+    const dest = document.getElementById(goTo);
+    if (dest) window.scrollTo({ top: dest.offsetTop, behavior: 'instant' });
+  }
+
+  // Particle field
+  const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+
+  function resizeCanvas() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas, { passive: true });
+
+  // Particles use page-space Y so they scroll with the page
+  const particles = Array.from({ length: 120 }, () => ({
+    x:       Math.random() * window.innerWidth,
+    y:       Math.random() * window.innerHeight,
+    size:    Math.random() < 0.3 ? 3 : 2,
+    speed:   0.25 + Math.random() * 0.45,
+    opacity: 0.12 + Math.random() * 0.22,
+  }));
+
+  function tickParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.shadowBlur = 5;
+    ctx.shadowColor = 'rgba(63, 185, 80, 0.9)';
+    for (const p of particles) {
+      ctx.fillStyle = `rgba(63, 185, 80, ${p.opacity})`;
+      ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+      p.y -= p.speed;
+      if (p.y < -2) {
+        p.y = canvas.height + Math.random() * 200;
+        p.x = Math.random() * canvas.width;
+      }
+    }
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(tickParticles);
+  }
+  tickParticles();
+
+  // CRT cursor mask — tracked on body so body::before can read it
+  document.addEventListener('mousemove', (e) => {
+    document.body.style.setProperty('--cx', e.clientX + 'px');
+    document.body.style.setProperty('--cy', e.clientY + 'px');
+  });
+
+  // Pixel sparks on click
+  document.addEventListener('click', (e) => {
+    const count = 12;
+    for (let i = 0; i < count; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'pixel-spark';
+      spark.style.left = e.clientX + 'px';
+      spark.style.top  = e.clientY + 'px';
+
+      const angle    = (i / count) * 360 + (Math.random() * 30 - 15);
+      const distance = 35 + Math.random() * 55;
+      spark.style.setProperty('--dx', `${Math.cos(angle * Math.PI / 180) * distance}px`);
+      spark.style.setProperty('--dy', `${Math.sin(angle * Math.PI / 180) * distance}px`);
+      spark.style.setProperty('--size', `${Math.random() < 0.3 ? 2 : 3}px`);
+
+      document.body.appendChild(spark);
+      setTimeout(() => spark.remove(), 550);
+    }
+  });
+
+  // Chromatic aberration — active while scrolling, fades out on stop
+  const chromaEls = document.querySelectorAll<HTMLElement>('h2, h3');
+  let scrollTimer: ReturnType<typeof setTimeout>;
+
+  window.addEventListener('scroll', () => {
+    chromaEls.forEach(el => el.classList.add('chroma-active'));
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      chromaEls.forEach(el => el.classList.remove('chroma-active'));
+    }, 120);
+  }, { passive: true });
+
+  // ── Section navigation ──
+  const SECTIONS = [
+    { el: document.querySelector<HTMLElement>('.hero'),        label: 'main'      },
+    { el: document.getElementById('projects'),                 label: 'projects'  },
+    { el: document.getElementById('about'),                    label: 'about'     },
+    { el: document.getElementById('education'),                label: 'education' },
+    { el: document.getElementById('contact'),                  label: 'contact'   },
+  ].filter(s => s.el !== null) as { el: HTMLElement; label: string }[];
+
+  const cmdBar  = document.getElementById('cmd-bar')  as HTMLElement;
+  const cmdText = document.getElementById('cmd-text') as HTMLElement;
+
+  let transitioning  = false;
+  let charge         = 0;           // 0–1 typing progress
+  let chargingTarget = -1;          // section index we're charging toward
+  let chargingDir    = 0 as 1|-1;   // which scroll direction fills the bar
+  const SENSITIVITY  = 320;         // px of scroll to fully type command
+
+  function getCurrentIndex(): number {
+    const mid = window.scrollY + window.innerHeight / 2;
+    for (let i = SECTIONS.length - 1; i >= 0; i--) {
+      if (SECTIONS[i].el.offsetTop <= mid) return i;
+    }
+    return 0;
+  }
+
+  function atBoundary(idx: number, dir: 1 | -1): boolean {
+    const rect = SECTIONS[idx].el.getBoundingClientRect();
+    return dir === 1 ? rect.bottom <= window.innerHeight + 80
+                     : rect.top    >= -80;
+  }
+
+  function resetCharge() {
+    charge = 0;
+    chargingTarget = -1;
+    chargingDir = 0 as 1|-1;
+    cmdBar.classList.remove('visible');
+    cmdText.textContent = '';
+  }
+
+  async function executeTransition(idx: number) {
+    transitioning = true;
+    const flash = document.createElement('div');
+    flash.className = 'transition-flash';
+    document.body.appendChild(flash);
+    await new Promise(r => setTimeout(r, 80));
+    window.scrollTo({ top: Math.max(0, SECTIONS[idx].el.offsetTop), behavior: 'instant' });
+    await new Promise(r => setTimeout(r, 80));
+    flash.remove();
+    resetCharge();
+    transitioning = false;
+  }
+
+  window.addEventListener('wheel', (e) => {
+    if (transitioning) { e.preventDefault(); return; }
+
+    const dir = (e.deltaY > 0 ? 1 : -1) as 1 | -1;
+
+    // Already charging — scrolling in chargingDir fills bar, opposite empties it
+    if (chargingTarget >= 0) {
+      e.preventDefault();
+      const scrollDir = (e.deltaY > 0 ? 1 : -1) as 1 | -1;
+      const delta = (scrollDir === chargingDir ? 1 : -1) * Math.abs(e.deltaY) / SENSITIVITY;
+      charge = Math.max(0, Math.min(1, charge + delta));
+      const cmd = `./${SECTIONS[chargingTarget].label}`;
+      cmdText.textContent = cmd.slice(0, Math.floor(charge * cmd.length));
+      if (charge >= 1) { executeTransition(chargingTarget); return; }
+      if (charge <= 0) { resetCharge(); }
+      return;
+    }
+
+    // Not charging — check if we're at a boundary to start
+    const idx = getCurrentIndex();
+    const target = idx + dir;
+    if (target < 0 || target >= SECTIONS.length) return;
+
+    if (atBoundary(idx, dir)) {
+      e.preventDefault();
+      chargingTarget = target;
+      chargingDir = dir;
+      cmdBar.classList.add('visible');
+      charge = Math.abs(e.deltaY) / SENSITIVITY;
+      const cmd = `./${SECTIONS[target].label}`;
+      cmdText.textContent = cmd.slice(0, Math.floor(charge * cmd.length));
+    }
+  }, { passive: false });
+
+  // Chromatic aberration on card hover — brief flash, not persistent
+  document.querySelectorAll<HTMLElement>('.card').forEach(card => {
+    const title = card.querySelector<HTMLElement>('.card-name');
+    if (!title) return;
+    card.addEventListener('mouseenter', () => {
+      title.classList.add('chroma-active');
+      setTimeout(() => title.classList.remove('chroma-active'), 400);
+    });
+  });
+
+  // Active nav link — highlight current section
+  const navLinks = document.querySelectorAll<HTMLElement>('.nav-links a[href^="#"]');
+  const sectionObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`);
+      });
+    }
+  }, { threshold: 0.6 });
+  document.querySelectorAll<HTMLElement>('section[id]').forEach(s => sectionObserver.observe(s));
+</script>

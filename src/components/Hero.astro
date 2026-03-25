@@ -1,14 +1,18 @@
 ---
 ---
 
-<section class="hero">
-  <div class="terminal-bar">
-    <span class="dot red"></span>
-    <span class="dot yellow"></span>
-    <span class="dot green-dot"></span>
-    <span class="terminal-title">portfolio.exe</span>
+<section class="hero" id="hero">
+  <div id="hero-terminal">
+    <div class="terminal-bar">
+      <span class="terminal-title">portfolio.exe</span>
+      <div class="terminal-btns">
+        <span class="tbtn">−</span>
+        <span class="tbtn">□</span>
+        <span class="tbtn">×</span>
+      </div>
+    </div>
+    <div class="terminal-body" id="terminal-body"></div>
   </div>
-  <div class="terminal-body" id="terminal-body"></div>
   <div class="scroll-hint" id="scroll-hint">scroll down ↓</div>
 </section>
 
@@ -67,6 +71,7 @@
       if (entry.kind === 'command') {
         const p = addPromptLine();
         const span = document.createElement('span');
+        span.className = 'cmd-text';
         span.textContent = entry.text;
         p.appendChild(span);
       } else {
@@ -90,6 +95,7 @@
         await sleep(PRE_CMD);
         const p = addPromptLine();
         const span = document.createElement('span');
+        span.className = 'cmd-text';
         p.appendChild(span);
         await typeInto(span, entry.text, CMD_DELAY);
         await sleep(POST_CMD);
@@ -118,7 +124,7 @@
   }
 </script>
 
-<style>
+<style is:global>
   .hero {
     min-height: 100vh;
     display: flex;
@@ -134,23 +140,42 @@
     border: 1px solid var(--border);
     border-bottom: none;
     border-radius: 6px 6px 0 0;
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 1rem;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: space-between;
   }
 
-  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  .dot.red       { background: #ff5f57; }
-  .dot.yellow    { background: #ffbd2e; }
-  .dot.green-dot { background: #28c840; }
-
   .terminal-title {
-    margin-left: 0.5rem;
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--text-dim);
   }
+
+  .terminal-btns {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .tbtn {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: rgba(63, 185, 80, 0.5);
+    border: 1px solid rgba(63, 185, 80, 0.25);
+    padding: 0.05rem 0.4rem;
+    border-radius: 2px;
+    cursor: default;
+    user-select: none;
+    line-height: 1.4;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .tbtn:hover {
+    border-color: var(--green-dim);
+    color: var(--green);
+  }
+
+  .cmd-text { color: #e3b341; }
 
   .terminal-body {
     background: var(--bg-card);
