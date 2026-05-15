@@ -22,7 +22,10 @@ const statusLabel = {
 <body>
   <div class="page">
 
-    <a href="/" class="back no-print">← back to full site</a>
+    <div class="cv-topbar no-print">
+      <a href="/" class="back">← back to full site</a>
+      <button class="download-btn" onclick="window.print()">↓ Download PDF</button>
+    </div>
 
     <header>
       <div class="header-main">
@@ -169,14 +172,34 @@ const statusLabel = {
     border-right: 1px solid #e5e7eb;
   }
 
+  .cv-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
   .back {
     display: inline-block;
-    margin-bottom: 2rem;
     font-size: 0.85rem;
     color: #666;
     text-decoration: none;
   }
   .back:hover { color: #1a1a1a; }
+
+  .download-btn {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #fff;
+    background: #1a1a1a;
+    border: none;
+    border-radius: 4px;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+  }
+  .download-btn:hover { background: #333; }
 
   /* Header */
   header {
