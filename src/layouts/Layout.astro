@@ -1,8 +1,19 @@
 ---
+import SEO from '../components/SEO.astro';
+
 interface Props {
   title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article' | 'profile';
 }
-const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
+
+const {
+  title = "Onur Adıgüzel — Game Programmer",
+  description = "Onur Adıgüzel (KiiVoZin) — Game Programmer based in Warsaw. Specializing in gameplay systems, shaders, and optimization across Unreal Engine 5, Unity, and Godot.",
+  image,
+  type,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -10,17 +21,8 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="description" content="Onur Adıgüzel (KiiVoZin) — Game Programmer based in Warsaw. Specializing in gameplay systems, shaders, and optimization across Unreal Engine 5, Unity, and Godot." />
-    <title>{title}</title>
-    <link rel="canonical" href="https://onuradiguzel.com/" />
-
-    <!-- Open Graph -->
-    <meta property="og:type"        content="website" />
-    <meta property="og:url"         content="https://onuradiguzel.com/" />
-    <meta property="og:title"       content={title} />
-    <meta property="og:description" content="Onur Adıgüzel (KiiVoZin) — Game Programmer based in Warsaw. Specializing in gameplay systems, shaders, and optimization across Unreal Engine 5, Unity, and Godot." />
+    <SEO title={title} description={description} image={image} type={type} />
 
     <!-- Person schema -->
     <script type="application/ld+json">

@@ -18,7 +18,11 @@ const statusColor = {
 const s = statusColor[p.status] ?? statusColor['Shipped'];
 ---
 
-<Layout title={`${p.name} — Onur Adıgüzel`}>
+<Layout
+  title={`${p.name} — Onur Adıgüzel`}
+  description={`${p.short} ${p.engine} · ${p.language} · ${p.year}.`}
+  type="article"
+>
   <Nav />
   <main class="project-page">
 
