@@ -159,6 +159,15 @@ const {
     }
   }
 
+  /* ── Pinned sections (enabled by script on the home page) ── */
+  html.pinned main {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    will-change: transform;
+  }
+
   /* ── Command bar ── */
   .cmd-bar {
     position: fixed;
@@ -251,13 +260,9 @@ const {
 </style>
 
 <script>
-  // ── Incoming navigation from project pages ──
+  // ── Incoming navigation from project pages (applied once sections are laid out) ──
   const goTo = sessionStorage.getItem('goTo');
-  if (goTo) {
-    sessionStorage.removeItem('goTo');
-    const dest = document.getElementById(goTo);
-    if (dest) window.scrollTo({ top: dest.offsetTop, behavior: 'instant' });
-  }
+  if (goTo) sessionStorage.removeItem('goTo');
 
   // Particle field
   const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
@@ -347,35 +352,82 @@ const {
   const cmdBar  = document.getElementById('cmd-bar')  as HTMLElement;
   const cmdText = document.getElementById('cmd-text') as HTMLElement;
 
-  // Scroll-linked command bar: the page scrolls natively (wheel, touch,
-  // keyboard, dragging the scrollbar all behave the same), and the bar types
-  // the next section's command in step with how far you are between sections.
-  const TYPE_END = 0.85;  // command is fully typed at 85% of the way there
+  // Pinned sections + scroll-driven command bar.
+  // The scrollbar moves natively and continuously (wheel, touch, keyboard and
+  // dragging the scrollbar all behave the same), but the visible page stays on
+  // one section. Each gap between sections is a stretch of scroll distance in
+  // which the bottom bar types the next command; when the scroll position
+  // crosses into the next section, the page jumps there.
+  // Sections taller than the viewport (mobile) scroll through their own
+  // content first, then the typing stretch starts.
+  const TYPE_DISTANCE = 0.7;  // viewport heights of scrolling per command
+  const TYPE_DONE     = 0.9;  // command is fully typed at 90% of the stretch
 
-  function sectionTops(): number[] {
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    return SECTIONS.map(s => Math.min(s.el.offsetTop, maxScroll));
-  }
+  type Seg = { start: number; top: number; content: number; type: number };
 
-  let tops: number[] = [];
+  const mainEl = document.querySelector<HTMLElement>('main');
+  const navLinks = document.querySelectorAll<HTMLElement>('.nav-links a[href^="#"]');
+  let segs: Seg[] = [];
+  let spacer: HTMLElement | null = null;
+  let current  = -1;
   let lastText = '';
   let ticking  = false;
 
-  function renderCmd() {
-    ticking = false;
-    const y = window.scrollY;
-    let i = 0;
-    while (i < tops.length - 1 && y >= tops[i + 1]) i++;
+  function layoutSegments() {
+    if (!mainEl || !spacer) return;
+    const vh = window.innerHeight;
+    const mainTop = mainEl.getBoundingClientRect().top;
+    let acc = 0;
+    segs = SECTIONS.map((s, i) => {
+      const r = s.el.getBoundingClientRect();
+      const seg: Seg = {
+        start:   acc,
+        top:     r.top - mainTop,
+        content: Math.max(0, Math.round(r.height - vh)),
+        type:    i < SECTIONS.length - 1 ? Math.round(vh * TYPE_DISTANCE) : 0,
+      };
+      acc += seg.content + seg.type;
+      return seg;
+    });
+    spacer.style.height = `${acc + vh}px`;
+  }
 
-    let text: string;
-    const next = i + 1;
-    if (next >= tops.length || y <= tops[i]) {
-      text = `./${SECTIONS[i].label}`;
-    } else {
-      const span = Math.max(1, tops[next] - tops[i]);
-      const p = Math.min(1, (y - tops[i]) / span / TYPE_END);
-      const cmd = `./${SECTIONS[next].label}`;
-      text = cmd.slice(0, Math.round(p * cmd.length));
+  function segmentAt(y: number): number {
+    let i = segs.length - 1;
+    while (i > 0 && y < segs[i].start) i--;
+    return i;
+  }
+
+  function flash() {
+    const el = document.createElement('div');
+    el.className = 'transition-flash';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 170);
+  }
+
+  function render() {
+    ticking = false;
+    if (!mainEl || !segs.length) return;
+    const y = Math.max(0, window.scrollY);
+    const i = segmentAt(y);
+    const seg = segs[i];
+    const o = y - seg.start;
+
+    const shift = seg.top + Math.min(o, seg.content);
+    mainEl.style.transform = `translate3d(0, ${-shift}px, 0)`;
+
+    if (i !== current) {
+      if (current !== -1) flash();
+      current = i;
+      const id = SECTIONS[i].el.id;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
+    }
+
+    let text = `./${SECTIONS[i].label}`;
+    if (seg.type > 0 && o > seg.content) {
+      const p = (o - seg.content) / seg.type;
+      const cmd = `./${SECTIONS[i + 1].label}`;
+      text = cmd.slice(0, Math.min(cmd.length, Math.floor((p / TYPE_DONE) * (cmd.length + 1))));
     }
     if (text !== lastText) {
       cmdText.textContent = text;
@@ -386,18 +438,49 @@ const {
   function requestRender() {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(renderCmd);
+    requestAnimationFrame(render);
   }
 
-  if (SECTIONS.length > 1) {
-    tops = sectionTops();
+  function scrollToSection(id: string, behavior: ScrollBehavior) {
+    const idx = SECTIONS.findIndex(s => s.el.id === id);
+    if (idx < 0) return false;
+    window.scrollTo({ top: segs[idx].start, behavior });
+    return true;
+  }
+
+  if (mainEl && SECTIONS.length > 1) {
+    spacer = document.createElement('div');
+    spacer.id = 'scroll-spacer';
+    document.body.appendChild(spacer);
+    document.documentElement.classList.add('pinned');
+    layoutSegments();
+
+    const initial = goTo || location.hash.slice(1);
+    if (!(initial && scrollToSection(initial, 'instant'))) render();
     cmdBar.classList.add('visible');
-    renderCmd();
+
     window.addEventListener('scroll', requestRender, { passive: true });
-    // Section positions shift when fonts/images load or the window resizes
-    const remeasure = () => { tops = sectionTops(); requestRender(); };
+    // Section sizes change when fonts/images load or the window resizes
+    const remeasure = () => {
+      const idx = segmentAt(window.scrollY);
+      const frac = segs[idx] ? (window.scrollY - segs[idx].start) : 0;
+      layoutSegments();
+      window.scrollTo({ top: segs[idx].start + frac, behavior: 'instant' });
+      requestRender();
+    };
     window.addEventListener('resize', remeasure, { passive: true });
-    new ResizeObserver(remeasure).observe(document.body);
+    new ResizeObserver(remeasure).observe(mainEl);
+
+    // In-page links (nav ./projects etc.) scroll to that section's position,
+    // so the bar types its way there.
+    document.addEventListener('click', (e) => {
+      const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!a) return;
+      if (scrollToSection(a.getAttribute('href')!.slice(1), 'smooth')) {
+        e.preventDefault();
+        history.replaceState(null, '', a.getAttribute('href'));
+      }
+    });
   }
 
   // Chromatic aberration on card hover — brief flash, not persistent
@@ -410,15 +493,4 @@ const {
     });
   });
 
-  // Active nav link — highlight current section
-  const navLinks = document.querySelectorAll<HTMLElement>('.nav-links a[href^="#"]');
-  const sectionObserver = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      navLinks.forEach(a => {
-        a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`);
-      });
-    }
-  }, { threshold: 0.6 });
-  document.querySelectorAll<HTMLElement>('section[id]').forEach(s => sectionObserver.observe(s));
 </script>
