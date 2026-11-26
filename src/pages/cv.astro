@@ -1,5 +1,6 @@
 ---
 import { projects } from '../data/projects.js';
+import SEO from '../components/SEO.astro';
 
 const statusLabel = {
   'Shipped':      { text: 'Shipped',      color: '#1a7f37' },
@@ -14,7 +15,11 @@ const statusLabel = {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Onur Adıgüzel — CV</title>
+  <SEO
+    title="Onur Adıgüzel — CV"
+    description="CV of Onur Adıgüzel, Game Programmer in Warsaw: gameplay, tools, shaders and optimization in Unreal Engine 5, Unity and Godot. Printable and downloadable as PDF."
+    type="profile"
+  />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
