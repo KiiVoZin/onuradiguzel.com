@@ -345,80 +345,58 @@ const { title = "Onur Adıgüzel — Game Programmer" } = Astro.props;
   const cmdBar  = document.getElementById('cmd-bar')  as HTMLElement;
   const cmdText = document.getElementById('cmd-text') as HTMLElement;
 
-  let transitioning  = false;
-  let charge         = 0;           // 0–1 typing progress
-  let chargingTarget = -1;          // section index we're charging toward
-  let chargingDir    = 0 as 1|-1;   // which scroll direction fills the bar
-  const SENSITIVITY  = 320;         // px of scroll to fully type command
+  // Scroll-linked command bar: the page scrolls natively (wheel, touch,
+  // keyboard, dragging the scrollbar all behave the same), and the bar types
+  // the next section's command in step with how far you are between sections.
+  const TYPE_END = 0.85;  // command is fully typed at 85% of the way there
 
-  function getCurrentIndex(): number {
-    const mid = window.scrollY + window.innerHeight / 2;
-    for (let i = SECTIONS.length - 1; i >= 0; i--) {
-      if (SECTIONS[i].el.offsetTop <= mid) return i;
+  function sectionTops(): number[] {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    return SECTIONS.map(s => Math.min(s.el.offsetTop, maxScroll));
+  }
+
+  let tops: number[] = [];
+  let lastText = '';
+  let ticking  = false;
+
+  function renderCmd() {
+    ticking = false;
+    const y = window.scrollY;
+    let i = 0;
+    while (i < tops.length - 1 && y >= tops[i + 1]) i++;
+
+    let text: string;
+    const next = i + 1;
+    if (next >= tops.length || y <= tops[i]) {
+      text = `./${SECTIONS[i].label}`;
+    } else {
+      const span = Math.max(1, tops[next] - tops[i]);
+      const p = Math.min(1, (y - tops[i]) / span / TYPE_END);
+      const cmd = `./${SECTIONS[next].label}`;
+      text = cmd.slice(0, Math.round(p * cmd.length));
     }
-    return 0;
-  }
-
-  function atBoundary(idx: number, dir: 1 | -1): boolean {
-    const rect = SECTIONS[idx].el.getBoundingClientRect();
-    return dir === 1 ? rect.bottom <= window.innerHeight + 80
-                     : rect.top    >= -80;
-  }
-
-  function resetCharge() {
-    charge = 0;
-    chargingTarget = -1;
-    chargingDir = 0 as 1|-1;
-    cmdBar.classList.remove('visible');
-    cmdText.textContent = '';
-  }
-
-  async function executeTransition(idx: number) {
-    transitioning = true;
-    const flash = document.createElement('div');
-    flash.className = 'transition-flash';
-    document.body.appendChild(flash);
-    await new Promise(r => setTimeout(r, 80));
-    window.scrollTo({ top: Math.max(0, SECTIONS[idx].el.offsetTop), behavior: 'instant' });
-    await new Promise(r => setTimeout(r, 80));
-    flash.remove();
-    resetCharge();
-    transitioning = false;
-  }
-
-  window.addEventListener('wheel', (e) => {
-    if (transitioning) { e.preventDefault(); return; }
-
-    const dir = (e.deltaY > 0 ? 1 : -1) as 1 | -1;
-
-    // Already charging — scrolling in chargingDir fills bar, opposite empties it
-    if (chargingTarget >= 0) {
-      e.preventDefault();
-      const scrollDir = (e.deltaY > 0 ? 1 : -1) as 1 | -1;
-      const delta = (scrollDir === chargingDir ? 1 : -1) * Math.abs(e.deltaY) / SENSITIVITY;
-      charge = Math.max(0, Math.min(1, charge + delta));
-      const cmd = `./${SECTIONS[chargingTarget].label}`;
-      cmdText.textContent = cmd.slice(0, Math.floor(charge * cmd.length));
-      if (charge >= 1) { executeTransition(chargingTarget); return; }
-      if (charge <= 0) { resetCharge(); }
-      return;
+    if (text !== lastText) {
+      cmdText.textContent = text;
+      lastText = text;
     }
+  }
 
-    // Not charging — check if we're at a boundary to start
-    const idx = getCurrentIndex();
-    const target = idx + dir;
-    if (target < 0 || target >= SECTIONS.length) return;
+  function requestRender() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(renderCmd);
+  }
 
-    if (atBoundary(idx, dir)) {
-      e.preventDefault();
-      chargingTarget = target;
-      chargingDir = dir;
-      cmdBar.classList.add('visible');
-      charge = Math.abs(e.deltaY) / SENSITIVITY;
-      const cmd = `./${SECTIONS[target].label}`;
-      cmdText.textContent = cmd.slice(0, Math.floor(charge * cmd.length));
-    }
-  }, { passive: false });
+  if (SECTIONS.length > 1) {
+    tops = sectionTops();
+    cmdBar.classList.add('visible');
+    renderCmd();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    // Section positions shift when fonts/images load or the window resizes
+    const remeasure = () => { tops = sectionTops(); requestRender(); };
+    window.addEventListener('resize', remeasure, { passive: true });
+    new ResizeObserver(remeasure).observe(document.body);
+  }
 
   // Chromatic aberration on card hover — brief flash, not persistent
   document.querySelectorAll<HTMLElement>('.card').forEach(card => {
