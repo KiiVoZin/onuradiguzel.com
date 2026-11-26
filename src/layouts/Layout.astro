@@ -356,8 +356,8 @@ const {
   // The scrollbar moves natively and continuously (wheel, touch, keyboard and
   // dragging the scrollbar all behave the same), but the visible page stays on
   // one section. Each gap between sections is a stretch of scroll distance in
-  // which the bottom bar types the next command; when the scroll position
-  // crosses into the next section, the page jumps there.
+  // which the bottom bar types where you're heading (the next section going
+  // down, the previous one going up); once the gap is crossed, the page jumps.
   // Sections taller than the viewport (mobile) scroll through their own
   // content first, then the typing stretch starts.
   const TYPE_DISTANCE = 0.7;  // viewport heights of scrolling per command
@@ -370,6 +370,7 @@ const {
   let segs: Seg[] = [];
   let spacer: HTMLElement | null = null;
   let current  = -1;
+  let lastY    = 0;
   let lastText = '';
   let ticking  = false;
 
@@ -409,24 +410,43 @@ const {
     ticking = false;
     if (!mainEl || !segs.length) return;
     const y = Math.max(0, window.scrollY);
+    const goingDown = y >= lastY;
+    lastY = y;
+
+    // Where is y? Either resting inside section i (its own content), or in
+    // the typing gap between section i and i+1.
     const i = segmentAt(y);
     const seg = segs[i];
     const o = y - seg.start;
+    const inGap = seg.type > 0 && o > seg.content;
 
-    const shift = seg.top + Math.min(o, seg.content);
+    // The visible section only changes once the gap has been crossed, so the
+    // same gap types "./next" on the way down and "./previous" on the way up.
+    let shown = i;
+    if (inGap && current !== i && current !== i + 1) {
+      shown = goingDown ? i : i + 1;  // arrived from far away (e.g. dragged the scrollbar)
+    } else if (inGap) {
+      shown = current;
+    }
+
+    const shift = shown === i
+      ? seg.top + Math.min(o, seg.content)
+      : segs[shown].top;
     mainEl.style.transform = `translate3d(0, ${-shift}px, 0)`;
 
-    if (i !== current) {
+    if (shown !== current) {
       if (current !== -1) flash();
-      current = i;
-      const id = SECTIONS[i].el.id;
+      current = shown;
+      const id = SECTIONS[shown].el.id;
       navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
     }
 
-    let text = `./${SECTIONS[i].label}`;
-    if (seg.type > 0 && o > seg.content) {
-      const p = (o - seg.content) / seg.type;
-      const cmd = `./${SECTIONS[i + 1].label}`;
+    let text = `./${SECTIONS[shown].label}`;
+    if (inGap) {
+      const p = shown === i
+        ? (o - seg.content) / seg.type            // heading down to i+1
+        : (seg.content + seg.type - o) / seg.type; // heading up to i
+      const cmd = `./${SECTIONS[shown === i ? i + 1 : i].label}`;
       text = cmd.slice(0, Math.min(cmd.length, Math.floor((p / TYPE_DONE) * (cmd.length + 1))));
     }
     if (text !== lastText) {
